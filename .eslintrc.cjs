@@ -27,10 +27,6 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'react', 'jsx-a11y', 'react-hooks', 'prettier', 'import'],
   rules: {
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": ["error"],
     "react/state-in-constructor": 0,
