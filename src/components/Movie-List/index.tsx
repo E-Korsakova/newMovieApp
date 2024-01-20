@@ -1,10 +1,11 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import { Flex } from 'antd';
 
 import MovieCard from '../Movie-Card/index.tsx';
+import AppFooter from '../App-Footer/index.tsx';
 import useMovieDBStore from '../../data/services/useMovieBDStore.ts';
 
-interface Movie {
+interface MovieProps {
   id: number;
   title: string;
   description: string;
@@ -14,9 +15,11 @@ interface Movie {
   movieGenres: (string | undefined)[];
 }
 
-// interface MovieList {
-//     movies: Movie[];
-// }
+interface MovieListProps {
+  page: number;
+  setPage: (newPageNumber: number) => void;
+  currentQuery: string;
+}
 
 const movieListStyle: React.CSSProperties = {
   justifyContent: 'space-evenly',
@@ -27,22 +30,28 @@ const movieListStyle: React.CSSProperties = {
   marginRight: 'auto',
 };
 
-function MovieList(): ReactElement {
-  const [movies] = useMovieDBStore((state) => [state.movies]);
-  console.log('fuf', movies);
+function MovieList({ page, setPage, currentQuery }: MovieListProps): ReactElement {
+  const [movies, setGenres] = useMovieDBStore((state) => [state.movies, state.setGenres]);
+  useEffect(() => {
+    setGenres();
+  }, [setGenres]);
+  //   console.log(movies);
   return (
-    <Flex style={movieListStyle}>
-      {movies.map((movie: Movie) => (
-        <MovieCard
-          key={movie.id}
-          title={movie.title}
-          description={movie.description}
-          releaseDate={movie.releaseDate}
-          posterUrl={movie.posterUrl}
-          movieGenres={movie.movieGenres}
-        />
-      ))}
-    </Flex>
+    <>
+      <Flex style={movieListStyle}>
+        {movies.map((movie: MovieProps) => (
+          <MovieCard
+            key={movie.id}
+            title={movie.title}
+            description={movie.description}
+            releaseDate={movie.releaseDate}
+            posterUrl={movie.posterUrl}
+            movieGenres={movie.movieGenres}
+          />
+        ))}
+      </Flex>
+      {movies[0] && <AppFooter page={page} setPage={setPage} currentQuery={currentQuery} />}
+    </>
   );
 }
 

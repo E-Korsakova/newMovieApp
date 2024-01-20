@@ -1,6 +1,8 @@
 import { format } from 'date-fns';
 import { create } from 'zustand';
 
+import noPosterImage from '../images/no_poster.jpeg';
+
 interface Genre {
   id: number;
   name: string;
@@ -57,16 +59,23 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
   },
   movies: [],
   genres: new Map<number, string>(),
-  setGenres: async () => {
-    const res = await fetch('https://api.themoviedb.org/3/genre/movie/list');
-    if (!res.ok) throw new Error('Can not get genres');
-    const allGenres = await res.json();
-    const mapGenres = new Map<number, string>();
-    allGenres.forEach((genre: Genre) => {
-      mapGenres.set(genre.id, genre.name);
-    });
-    set({ genres: mapGenres });
+
+  setGenres: async (): Promise<void> => {
+    const { options } = get();
+    try {
+      const res = await fetch('https://api.themoviedb.org/3/genre/movie/list', options);
+      if (!res.ok) throw new Error('Can not get genres');
+      const allGenres = await res.json();
+      const mapGenres = new Map<number, string>();
+      allGenres.genres.forEach((genre: Genre) => {
+        mapGenres.set(genre.id, genre.name);
+      });
+      set({ genres: mapGenres });
+    } catch (err) {
+      console.log(err);
+    }
   },
+
   getMovies: async (title, page) => {
     const { apiBase, options, genres } = get();
     const url = `${apiBase}?query=${title}&page=${page}`;
@@ -74,7 +83,8 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
     if (!res.ok) throw new Error('Can not get movies');
     const allMovies = await res.json();
     const MovieList: Movie[] = allMovies.results.map((movie: ApiMovie) => {
-      const date = format(new Date(movie.release_date), 'PP');
+      let date = '';
+      if (movie.release_date) date = format(new Date(movie.release_date), 'MMMM dd, yyyy');
       const movieGens = movie.genre_ids.map((id: number) => genres.get(id));
 
       const newMovie: Movie = {
@@ -82,7 +92,7 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
         title: movie.title,
         description: movie.overview,
         releaseDate: date,
-        posterUrl: `${url}/movie.poster_path`,
+        posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : noPosterImage,
         rating: movie.vote_average,
         movieGenres: movieGens,
       };

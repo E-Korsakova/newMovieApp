@@ -13,8 +13,8 @@ interface MovieCardProps {
 }
 
 const cardStyle = {
-  maxWidth: '450px',
-  maxHeight: '280px',
+  width: '450px',
+  height: '280px',
   borderRadius: 'none',
   boxShadow: '1px 5px 10px rgba(0, 0, 0, 0.15)',
   display: 'flex',
@@ -34,13 +34,12 @@ function MovieCard({
   movieGenres,
 }: MovieCardProps): ReactElement {
   const genres = movieGenres.map((genre) => <Tag key={movieGenres.indexOf(genre)}>{genre}</Tag>);
-  console.log('fuf');
   return (
     <Card hoverable style={cardStyle} bodyStyle={{ padding: 0, overflow: 'hidden' }}>
       <Flex justify="space-between">
         <img style={posterStyle} alt="Movie poster" src={posterUrl} />
-        <Flex vertical align="flex-start" style={{ padding: '0 20px', gap: '10px' }}>
-          <Typography.Title level={5} style={{ margin: '0', marginTop: '5px', fontSize: '28px' }}>
+        <Flex vertical align="flex-start" style={{ padding: '0 20px', gap: '5px' }}>
+          <Typography.Title level={5} style={{ margin: '0', marginTop: '10px', textAlign: 'left' }}>
             {title}
           </Typography.Title>
           <Typography.Text type="secondary">{releaseDate}</Typography.Text>
