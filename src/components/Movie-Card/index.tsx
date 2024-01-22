@@ -33,7 +33,11 @@ function MovieCard({
   //   rating,
   movieGenres,
 }: MovieCardProps): ReactElement {
-  const genres = movieGenres.map((genre) => <Tag key={movieGenres.indexOf(genre)}>{genre}</Tag>);
+  const genres = movieGenres.map((genre) => (
+    <Tag key={movieGenres.indexOf(genre)} style={{ padding: '0 5px' }}>
+      {genre}
+    </Tag>
+  ));
   return (
     <Card hoverable style={cardStyle} bodyStyle={{ padding: 0, overflow: 'hidden' }}>
       <Flex justify="space-between">
@@ -46,9 +50,7 @@ function MovieCard({
           <Space size={[0, 8]} wrap>
             {genres}
           </Space>
-          <Paragraph ellipsis={{ rows: 6 }} style={{ maxWidth: '230px', textAlign: 'start', fontSize: '12px' }}>
-            {description}
-          </Paragraph>
+          <Paragraph style={{ maxWidth: '230px', textAlign: 'start', fontSize: '12px' }}>{description}</Paragraph>
         </Flex>
       </Flex>
     </Card>

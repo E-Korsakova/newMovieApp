@@ -1,8 +1,10 @@
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import Layout from 'antd/es/layout/layout';
+import { Alert } from 'antd';
 
 import AppHeader from '../App-Header/index.tsx';
 import MovieList from '../Movie-List/index.tsx';
+import useMovieDBStore from '../../data/services/useMovieBDStore.ts';
 
 const appStyleMain: React.CSSProperties = {
   minHeight: '100vh',
@@ -19,21 +21,54 @@ const LayoutStyle: React.CSSProperties = {
 };
 
 function App(): ReactElement {
+  const [isError] = useMovieDBStore((state) => [state.isError]);
   const [pageNumber, setPageNumber] = useState(1);
   const [inputValue, setInputValue] = useState('');
   const [currentQuery, setCurrentQuery] = useState('');
+  const [isOnline, setIsOnline] = useState(window.navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  if (isOnline) {
+    return (
+      <div style={appStyleMain}>
+        <Layout style={LayoutStyle}>
+          <AppHeader
+            page={pageNumber}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            setCurrentQuery={setCurrentQuery}
+          />
+          {isError ? (
+            <Alert message="Oops!" description="Something went wrong." type="error" showIcon />
+          ) : (
+            <MovieList page={pageNumber} setPage={setPageNumber} currentQuery={currentQuery} />
+          )}
+        </Layout>
+      </div>
+    );
+  }
   return (
-    <div style={appStyleMain}>
-      <Layout style={LayoutStyle}>
-        <AppHeader
-          page={pageNumber}
-          inputValue={inputValue}
-          setInputValue={setInputValue}
-          setCurrentQuery={setCurrentQuery}
-        />
-        <MovieList page={pageNumber} setPage={setPageNumber} currentQuery={currentQuery} />
-      </Layout>
-    </div>
+    <Alert
+      message="Error: Web-page is not accessible"
+      description="The Movie-app cannot display the web-page because the computer is not connected to the Internet."
+      type="error"
+      showIcon
+    />
   );
 }
 

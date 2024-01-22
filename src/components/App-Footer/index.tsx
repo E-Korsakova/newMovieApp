@@ -15,13 +15,14 @@ const footerStyle: React.CSSProperties = {
 };
 
 function AppFooter({ page, currentQuery, setPage }: AppFooterProps): ReactElement {
-  const [getMovies] = useMovieDBStore((state) => [state.getMovies]);
+  const [totalResults, getMovies] = useMovieDBStore((state) => [state.totalResults, state.getMovies]);
   return (
     <Footer style={footerStyle}>
       <Pagination
         defaultCurrent={page}
-        total={50}
-        // defaultPageSize={20}
+        total={totalResults}
+        defaultPageSize={20}
+        showSizeChanger={false}
         onChange={(current) => {
           setPage(current);
           getMovies(currentQuery, current);

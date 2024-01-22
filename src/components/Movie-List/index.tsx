@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect } from 'react';
-import { Flex } from 'antd';
+import { Flex, Spin, Typography } from 'antd';
 
 import MovieCard from '../Movie-Card/index.tsx';
 import AppFooter from '../App-Footer/index.tsx';
@@ -31,26 +31,36 @@ const movieListStyle: React.CSSProperties = {
 };
 
 function MovieList({ page, setPage, currentQuery }: MovieListProps): ReactElement {
-  const [movies, setGenres] = useMovieDBStore((state) => [state.movies, state.setGenres]);
+  const [isNoResults, movies, isLoading, setGenres] = useMovieDBStore((state) => [
+    state.isNoResults,
+    state.movies,
+    state.isLoading,
+    state.setGenres,
+  ]);
   useEffect(() => {
     setGenres();
   }, [setGenres]);
-  //   console.log(movies);
   return (
     <>
-      <Flex style={movieListStyle}>
-        {movies.map((movie: MovieProps) => (
-          <MovieCard
-            key={movie.id}
-            title={movie.title}
-            description={movie.description}
-            releaseDate={movie.releaseDate}
-            posterUrl={movie.posterUrl}
-            movieGenres={movie.movieGenres}
-          />
-        ))}
-      </Flex>
-      {movies[0] && <AppFooter page={page} setPage={setPage} currentQuery={currentQuery} />}
+      {isLoading && <Spin size="large" />}
+      {isNoResults && <Typography.Text>По запросу &ldquo;{currentQuery}&ldquo; ничего не найдено.</Typography.Text>}
+      {!isLoading && (
+        <>
+          <Flex style={movieListStyle}>
+            {movies.map((movie: MovieProps) => (
+              <MovieCard
+                key={movie.id}
+                title={movie.title}
+                description={movie.description}
+                releaseDate={movie.releaseDate}
+                posterUrl={movie.posterUrl}
+                movieGenres={movie.movieGenres}
+              />
+            ))}
+          </Flex>
+          {movies[0] && <AppFooter page={page} setPage={setPage} currentQuery={currentQuery} />}
+        </>
+      )}
     </>
   );
 }

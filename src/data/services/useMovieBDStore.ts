@@ -39,15 +39,21 @@ interface OptionsProps {
 }
 
 interface MoviesList {
+  isError: boolean;
+  isNoResults: boolean;
   apiBase: string;
   options: OptionsProps;
   movies: Movie[];
   genres: Map<number, string>;
+  isLoading: boolean;
+  totalResults: number;
   getMovies: (title: string, page: number) => void;
   setGenres: () => Promise<void>;
 }
 
 const useMovieDBStore = create<MoviesList>((set, get) => ({
+  isError: false,
+  isNoResults: false,
   apiBase: 'https://api.themoviedb.org/3/search/movie',
   options: {
     method: 'GET',
@@ -59,46 +65,59 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
   },
   movies: [],
   genres: new Map<number, string>(),
+  isLoading: false,
+  totalResults: 0,
 
   setGenres: async (): Promise<void> => {
     const { options } = get();
     try {
       const res = await fetch('https://api.themoviedb.org/3/genre/movie/list', options);
-      if (!res.ok) throw new Error('Can not get genres');
+      if (!res.ok) set({ isError: true });
       const allGenres = await res.json();
       const mapGenres = new Map<number, string>();
       allGenres.genres.forEach((genre: Genre) => {
         mapGenres.set(genre.id, genre.name);
       });
       set({ genres: mapGenres });
-    } catch (err) {
-      console.log(err);
+    } catch {
+      set({ isError: true });
     }
   },
 
   getMovies: async (title, page) => {
     const { apiBase, options, genres } = get();
-    const url = `${apiBase}?query=${title}&page=${page}`;
-    const res = await fetch(url, options);
-    if (!res.ok) throw new Error('Can not get movies');
-    const allMovies = await res.json();
-    const MovieList: Movie[] = allMovies.results.map((movie: ApiMovie) => {
-      let date = '';
-      if (movie.release_date) date = format(new Date(movie.release_date), 'MMMM dd, yyyy');
-      const movieGens = movie.genre_ids.map((id: number) => genres.get(id));
+    set({ isLoading: true });
+    try {
+      const url = `${apiBase}?query=${title}&page=${page}`;
+      const res = await fetch(url, options);
+      if (!res.ok) set({ isError: true });
+      const allMovies = await res.json();
+      if (allMovies.results.length === 0) set({ isNoResults: true });
+      const MovieList: Movie[] = allMovies.results.map((movie: ApiMovie) => {
+        let date = '';
+        if (movie.release_date) date = format(new Date(movie.release_date), 'MMMM dd, yyyy');
+        const movieGens = movie.genre_ids.map((id: number) => genres.get(id));
 
-      const newMovie: Movie = {
-        id: movie.id,
-        title: movie.title,
-        description: movie.overview,
-        releaseDate: date,
-        posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : noPosterImage,
-        rating: movie.vote_average,
-        movieGenres: movieGens,
-      };
-      return newMovie;
-    });
-    set({ movies: MovieList });
+        let desc = movie.overview;
+        if (movie.overview.length > 220) {
+          desc = `${movie.overview.slice(0, movie.overview.lastIndexOf(' ', 220))}...`;
+        }
+
+        const newMovie: Movie = {
+          id: movie.id,
+          title: movie.title,
+          description: desc,
+          releaseDate: date,
+          posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/original${movie.poster_path}` : noPosterImage,
+          rating: movie.vote_average,
+          movieGenres: movieGens,
+        };
+        return newMovie;
+      });
+      set({ movies: MovieList, isLoading: false, totalResults: allMovies.total_results });
+    } catch {
+      set({ isError: true });
+    }
   },
 }));
 
