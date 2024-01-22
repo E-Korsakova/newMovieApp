@@ -12,7 +12,7 @@ interface MovieProps {
   description: string;
   releaseDate: string;
   posterUrl: string;
-  // rating: number;
+  rating: number;
   movieGenres: (string | undefined)[];
 }
 
@@ -53,6 +53,7 @@ function MovieList({ page, setPage, currentQuery }: MovieListProps): ReactElemen
               <MovieCard
                 key={movie.id}
                 title={movie.title}
+                rating={movie.rating}
                 description={movie.description}
                 releaseDate={movie.releaseDate}
                 posterUrl={movie.posterUrl}

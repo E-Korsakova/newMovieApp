@@ -9,20 +9,30 @@ interface MovieCardProps {
   description: string;
   releaseDate: string;
   posterUrl: string;
-  //   rating: number;
+  rating: number;
   movieGenres: (string | undefined)[];
 }
 
-const cardStyle = {
+const cardStyle: React.CSSProperties = {
   width: '450px',
   height: '280px',
   borderRadius: 'none',
   boxShadow: '1px 5px 10px rgba(0, 0, 0, 0.15)',
   display: 'flex',
 };
-const posterStyle = {
+const posterStyle: React.CSSProperties = {
   display: 'block',
+  width: '180px',
   height: '280px',
+  backgroundSize: 'cover',
+};
+
+const ratingStyle: React.CSSProperties = {
+  width: '30px',
+  height: '30px',
+  boxSizing: 'content-box',
+  border: '2px solid #E9D100',
+  borderRadius: '50%',
 };
 
 function MovieCard({
@@ -31,7 +41,7 @@ function MovieCard({
   description,
   releaseDate,
   posterUrl,
-  //   rating,
+  rating,
   movieGenres,
 }: MovieCardProps): ReactElement {
   const isMobile = useMediaQuery({ query: '(max-width: 990px)' });
@@ -62,16 +72,32 @@ function MovieCard({
           align="flex-start"
           style={isMobile ? { padding: '0 10px', gap: '5px' } : { padding: '0 20px', gap: '5px' }}
         >
-          <Typography.Title
-            level={5}
+          <Flex
+            justify="space-between"
+            align="flex-start"
             style={
               isMobile
-                ? { margin: 0, marginTop: '5px', textAlign: 'left' }
-                : { margin: '0', marginTop: '10px', textAlign: 'left' }
+                ? { width: '295px', marginTop: '5px', paddingRight: '10px' }
+                : { width: '240px', marginTop: '10px', paddingRight: '10px' }
             }
           >
-            {title}
-          </Typography.Title>
+            <Typography.Title
+              level={5}
+              style={
+                isMobile
+                  ? { width: '70%', margin: 0, textAlign: 'left' }
+                  : { maxWidth: '80%', margin: 0, textAlign: 'left' }
+              }
+            >
+              {title}
+            </Typography.Title>
+
+            <div style={ratingStyle}>
+              <Typography.Text strong style={{ fontSize: '12px', verticalAlign: 'sub' }}>
+                {rating}
+              </Typography.Text>
+            </div>
+          </Flex>
           <Typography.Text type="secondary">{releaseDate}</Typography.Text>
           <Space size={[0, 8]} wrap>
             {genres}

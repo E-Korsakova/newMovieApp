@@ -109,7 +109,7 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
           description: desc,
           releaseDate: date,
           posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/original${movie.poster_path}` : noPosterImage,
-          rating: movie.vote_average,
+          rating: Math.trunc(movie.vote_average * 10) / 10,
           movieGenres: movieGens,
         };
         return newMovie;
