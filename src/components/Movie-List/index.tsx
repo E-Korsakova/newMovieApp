@@ -1,5 +1,6 @@
 import React, { ReactElement, useEffect } from 'react';
 import { Flex, Spin, Typography } from 'antd';
+import { useMediaQuery } from 'react-responsive';
 
 import MovieCard from '../Movie-Card/index.tsx';
 import AppFooter from '../App-Footer/index.tsx';
@@ -31,6 +32,7 @@ const movieListStyle: React.CSSProperties = {
 };
 
 function MovieList({ page, setPage, currentQuery }: MovieListProps): ReactElement {
+  const isMobile = useMediaQuery({ query: '(max-width: 990px)' });
   const [isNoResults, movies, isLoading, setGenres] = useMovieDBStore((state) => [
     state.isNoResults,
     state.movies,
@@ -46,7 +48,7 @@ function MovieList({ page, setPage, currentQuery }: MovieListProps): ReactElemen
       {isNoResults && <Typography.Text>По запросу &ldquo;{currentQuery}&ldquo; ничего не найдено.</Typography.Text>}
       {!isLoading && (
         <>
-          <Flex style={movieListStyle}>
+          <Flex style={isMobile ? { ...movieListStyle, margin: '0 10px' } : movieListStyle}>
             {movies.map((movie: MovieProps) => (
               <MovieCard
                 key={movie.id}

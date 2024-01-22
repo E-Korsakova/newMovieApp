@@ -1,6 +1,7 @@
 import { Input, Tabs, TabsProps } from 'antd';
 import { Header } from 'antd/es/layout/layout';
 import { ReactElement } from 'react';
+import { useMediaQuery } from 'react-responsive';
 
 import useMovieDBStore from '../../data/services/useMovieBDStore.ts';
 
@@ -34,11 +35,13 @@ const appHeaderStyle: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
 };
+
 function AppHeader({ page, inputValue, setInputValue, setCurrentQuery }: AppHeaderProps): ReactElement {
+  const isMobile = useMediaQuery({ query: '(max-width: 990px)' });
   const [getMovies] = useMovieDBStore((state) => [state.getMovies]);
 
   return (
-    <Header style={appHeaderStyle}>
+    <Header style={isMobile ? { ...appHeaderStyle, padding: '0 10px' } : appHeaderStyle}>
       <Tabs defaultActiveKey="1" items={tabItems} onChange={onChange} />
       <Input
         placeholder="Type to search..."

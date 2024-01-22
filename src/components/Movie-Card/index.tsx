@@ -1,6 +1,7 @@
 import { Card, Flex, Space, Tag, Typography } from 'antd';
 import Paragraph from 'antd/es/typography/Paragraph';
 import { ReactElement } from 'react';
+import { useMediaQuery } from 'react-responsive';
 
 interface MovieCardProps {
   //   id: number;
@@ -33,26 +34,58 @@ function MovieCard({
   //   rating,
   movieGenres,
 }: MovieCardProps): ReactElement {
+  const isMobile = useMediaQuery({ query: '(max-width: 990px)' });
   const genres = movieGenres.map((genre) => (
     <Tag key={movieGenres.indexOf(genre)} style={{ padding: '0 5px' }}>
       {genre}
     </Tag>
   ));
+  const justify = isMobile ? 'flex-start' : 'space-between';
   return (
-    <Card hoverable style={cardStyle} bodyStyle={{ padding: 0, overflow: 'hidden' }}>
-      <Flex justify="space-between">
-        <img style={posterStyle} alt="Movie poster" src={posterUrl} />
-        <Flex vertical align="flex-start" style={{ padding: '0 20px', gap: '5px' }}>
-          <Typography.Title level={5} style={{ margin: '0', marginTop: '10px', textAlign: 'left' }}>
+    <Card
+      hoverable
+      style={isMobile ? { ...cardStyle, maxWidth: '380px', maxHeight: '245px' } : cardStyle}
+      bodyStyle={{ padding: 0, overflow: 'hidden' }}
+    >
+      <Flex justify={justify}>
+        <img
+          style={
+            isMobile
+              ? { ...posterStyle, height: '90px', boxSizing: 'content-box', padding: '5px 5px 5px 10px' }
+              : posterStyle
+          }
+          alt="Movie poster"
+          src={posterUrl}
+        />
+        <Flex
+          vertical
+          align="flex-start"
+          style={isMobile ? { padding: '0 10px', gap: '5px' } : { padding: '0 20px', gap: '5px' }}
+        >
+          <Typography.Title
+            level={5}
+            style={
+              isMobile
+                ? { margin: 0, marginTop: '5px', textAlign: 'left' }
+                : { margin: '0', marginTop: '10px', textAlign: 'left' }
+            }
+          >
             {title}
           </Typography.Title>
           <Typography.Text type="secondary">{releaseDate}</Typography.Text>
           <Space size={[0, 8]} wrap>
             {genres}
           </Space>
-          <Paragraph style={{ maxWidth: '230px', textAlign: 'start', fontSize: '12px' }}>{description}</Paragraph>
+          {!isMobile && (
+            <Paragraph style={{ maxWidth: '230px', textAlign: 'start', fontSize: '12px' }}>{description}</Paragraph>
+          )}
         </Flex>
       </Flex>
+      {isMobile && (
+        <Paragraph style={{ maxWidth: '370px', textAlign: 'start', fontSize: '12px', padding: '0 10px 5px 10px' }}>
+          {description}
+        </Paragraph>
+      )}
     </Card>
   );
 }

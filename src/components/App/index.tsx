@@ -43,26 +43,23 @@ function App(): ReactElement {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
-  if (isOnline) {
-    return (
-      <div style={appStyleMain}>
-        <Layout style={LayoutStyle}>
-          <AppHeader
-            page={pageNumber}
-            inputValue={inputValue}
-            setInputValue={setInputValue}
-            setCurrentQuery={setCurrentQuery}
-          />
-          {isError ? (
-            <Alert message="Oops!" description="Something went wrong." type="error" showIcon />
-          ) : (
-            <MovieList page={pageNumber} setPage={setPageNumber} currentQuery={currentQuery} />
-          )}
-        </Layout>
-      </div>
-    );
-  }
-  return (
+  return isOnline ? (
+    <div style={appStyleMain}>
+      <Layout style={LayoutStyle}>
+        <AppHeader
+          page={pageNumber}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+          setCurrentQuery={setCurrentQuery}
+        />
+        {isError ? (
+          <Alert message="Oops!" description="Something went wrong." type="error" showIcon />
+        ) : (
+          <MovieList page={pageNumber} setPage={setPageNumber} currentQuery={currentQuery} />
+        )}
+      </Layout>
+    </div>
+  ) : (
     <Alert
       message="Error: Web-page is not accessible"
       description="The Movie-app cannot display the web-page because the computer is not connected to the Internet."
@@ -71,5 +68,4 @@ function App(): ReactElement {
     />
   );
 }
-
 export default App;
