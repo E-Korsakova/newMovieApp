@@ -27,6 +27,7 @@ const movieListStyle: React.CSSProperties = {
   flexWrap: 'wrap',
   rowGap: '35px',
   maxWidth: '1010px',
+  marginTop: '20px',
   marginLeft: 'auto',
   marginRight: 'auto',
 };
@@ -38,6 +39,7 @@ function MovieList({ page, setPage, currentQuery }: MovieListProps): ReactElemen
     state.movies,
     state.isLoading,
     state.setGenres,
+    state.totalResults,
   ]);
   useEffect(() => {
     setGenres();
@@ -45,7 +47,9 @@ function MovieList({ page, setPage, currentQuery }: MovieListProps): ReactElemen
   return (
     <>
       {isLoading && <Spin size="large" />}
-      {isNoResults && <Typography.Text>По запросу &ldquo;{currentQuery}&ldquo; ничего не найдено.</Typography.Text>}
+      {isNoResults && !isLoading && currentQuery && (
+        <Typography.Text>По запросу &ldquo;{currentQuery}&ldquo; ничего не найдено.</Typography.Text>
+      )}
       {!isLoading && (
         <>
           <Flex style={isMobile ? { ...movieListStyle, margin: '0 10px' } : movieListStyle}>

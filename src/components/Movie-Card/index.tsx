@@ -1,3 +1,4 @@
+import { StarFilled } from '@ant-design/icons';
 import { Card, Flex, Space, Tag, Typography } from 'antd';
 import Paragraph from 'antd/es/typography/Paragraph';
 import { ReactElement } from 'react';
@@ -35,6 +36,13 @@ const ratingStyle: React.CSSProperties = {
   borderRadius: '50%',
 };
 
+const starsSryle: React.CSSProperties = {
+  gap: '5px',
+  position: 'absolute',
+  bottom: '20px',
+  right: '20px',
+};
+
 function MovieCard({
   //   id,
   title,
@@ -50,6 +58,7 @@ function MovieCard({
       {genre}
     </Tag>
   ));
+
   const justify = isMobile ? 'flex-start' : 'space-between';
   return (
     <Card
@@ -61,7 +70,7 @@ function MovieCard({
         <img
           style={
             isMobile
-              ? { ...posterStyle, height: '90px', boxSizing: 'content-box', padding: '5px 5px 5px 10px' }
+              ? { ...posterStyle, width: '60px', height: '90px', boxSizing: 'content-box', padding: '5px 5px 5px 10px' }
               : posterStyle
           }
           alt="Movie poster"
@@ -103,15 +112,35 @@ function MovieCard({
             {genres}
           </Space>
           {!isMobile && (
-            <Paragraph style={{ maxWidth: '230px', textAlign: 'start', fontSize: '12px' }}>{description}</Paragraph>
+            <Paragraph
+              style={{ maxWidth: '230px', height: '80%', textAlign: 'start', fontSize: '12px', marginBottom: 0 }}
+            >
+              {description}
+            </Paragraph>
           )}
         </Flex>
       </Flex>
       {isMobile && (
-        <Paragraph style={{ maxWidth: '370px', textAlign: 'start', fontSize: '12px', padding: '0 10px 5px 10px' }}>
+        <Paragraph
+          style={{
+            maxWidth: '370px',
+            textAlign: 'start',
+            fontSize: '12px',
+            padding: '0 10px 5px 10px',
+            marginBottom: 0,
+          }}
+        >
           {description}
         </Paragraph>
       )}
+      <Flex style={isMobile ? { ...starsSryle, right: '15px' } : starsSryle}>
+        {Array(10)
+          .fill('star')
+          .map((star, index) => {
+            const id = `${star}-${index}`;
+            return <StarFilled key={id} style={{ fontSize: '18px', color: '#D9D9D9' }} />;
+          })}
+      </Flex>
     </Card>
   );
 }

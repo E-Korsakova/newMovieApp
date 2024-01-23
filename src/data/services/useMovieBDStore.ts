@@ -93,14 +93,15 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
       if (!res.ok) set({ isError: true });
       const allMovies = await res.json();
       if (allMovies.results.length === 0) set({ isNoResults: true });
+      else set({ isNoResults: false });
       const MovieList: Movie[] = allMovies.results.map((movie: ApiMovie) => {
         let date = '';
         if (movie.release_date) date = format(new Date(movie.release_date), 'MMMM dd, yyyy');
         const movieGens = movie.genre_ids.map((id: number) => genres.get(id));
 
         let desc = movie.overview;
-        if (movie.overview.length > 220) {
-          desc = `${movie.overview.slice(0, movie.overview.lastIndexOf(' ', 220))}...`;
+        if (movie.overview.length > 200) {
+          desc = `${movie.overview.slice(0, movie.overview.lastIndexOf(' ', 200))}...`;
         }
 
         const newMovie: Movie = {
