@@ -6,10 +6,6 @@ import debounce from 'lodash.debounce';
 
 import useMovieDBStore from '../../data/services/useMovieBDStore.ts';
 
-const onChange = (key: string): void => {
-  console.log(key);
-};
-
 const tabItems: TabsProps['items'] = [
   {
     key: '1',
@@ -23,7 +19,11 @@ const tabItems: TabsProps['items'] = [
 
 interface AppHeaderProps {
   page: number;
+  ratedPage: number;
+  tabKey: string;
+  setTabKey: (newValue: string) => void;
   inputValue: string;
+  // currentQuery: string;
   setInputValue: (newValue: string) => void;
   setCurrentQuery: (newValue: string) => void;
 }
@@ -34,33 +34,61 @@ const appHeaderStyle: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  justifyContent: 'center',
-  marginTop: '20px',
+  justifyContent: 'flex-start',
+  marginTop: '40px',
 };
 
-function AppHeader({ page, inputValue, setInputValue, setCurrentQuery }: AppHeaderProps): ReactElement {
+function AppHeader({
+  page,
+  ratedPage,
+  tabKey,
+  setTabKey,
+  inputValue,
+  // currentQuery,
+  setInputValue,
+  setCurrentQuery,
+}: AppHeaderProps): ReactElement {
   const isMobile = useMediaQuery({ query: '(max-width: 990px)' });
-  const [getMovies] = useMovieDBStore((state) => [state.getMovies]);
+  const [getMovies, getRatedMovies] = useMovieDBStore((state) => [state.getMovies, state.getRatedMovies]);
 
   const onInputChange = debounce((evt: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(evt.target.value);
     getMovies(evt.target.value, page);
   }, 600);
 
   return (
     <Header style={isMobile ? { ...appHeaderStyle, padding: '0 10px' } : appHeaderStyle}>
-      <Tabs defaultActiveKey="1" items={tabItems} onChange={onChange} />
-      <Input
-        placeholder="Type to search..."
-        onChange={onInputChange}
-        onKeyDown={(evt) => {
-          if (evt.key === 'Enter') {
+      <Tabs
+        destroyInactiveTabPane
+        defaultActiveKey="1"
+        items={tabItems}
+        onChange={(key) => {
+          setTabKey(key);
+          setCurrentQuery(inputValue);
+          if (key === '1') {
             getMovies(inputValue, page);
-            setCurrentQuery(inputValue);
-            setInputValue('');
+          }
+          if (key === '2') {
+            getRatedMovies(ratedPage);
           }
         }}
       />
+      {tabKey === '1' && (
+        <Input
+          placeholder="Type to search..."
+          onChange={(evt) => {
+            setInputValue(evt.target.value);
+            onInputChange(evt);
+          }}
+          value={inputValue}
+          onKeyDown={(evt: React.KeyboardEvent<HTMLInputElement>) => {
+            if (evt.key === 'Enter') {
+              getMovies(inputValue, page);
+              setCurrentQuery(inputValue);
+              setInputValue('');
+            }
+          }}
+        />
+      )}
     </Header>
   );
 }

@@ -3,11 +3,6 @@ import { create } from 'zustand';
 
 import noPosterImage from '../images/no_poster.jpeg';
 
-interface Genre {
-  id: number;
-  name: string;
-}
-
 interface ApiMovie {
   id: number;
   title: string;
@@ -15,6 +10,7 @@ interface ApiMovie {
   release_date: string;
   poster_path: string;
   vote_average: number;
+  rating: number | undefined;
   genre_ids: number[];
 }
 
@@ -25,12 +21,12 @@ interface Movie {
   releaseDate: string;
   posterUrl: string;
   rating: number;
-  movieGenres: (string | undefined)[];
+  userRating: number;
+  movieGenres: Map<number, string>;
 }
 
 type Headers = {
   accept: string;
-  Authorization: string;
 };
 
 interface OptionsProps {
@@ -41,54 +37,44 @@ interface OptionsProps {
 interface MoviesList {
   isError: boolean;
   isNoResults: boolean;
-  apiBase: string;
+  _apiBase: string;
+  apiKey: string;
+  guestSessionId: string;
   options: OptionsProps;
   movies: Movie[];
-  genres: Map<number, string>;
+  ratedMovies: Map<number, number>;
   isLoading: boolean;
   totalResults: number;
   getMovies: (title: string, page: number) => void;
-  setGenres: () => Promise<void>;
+  getRatedMovies: (page: number) => void;
+  getGuestSessionId: () => void;
+  addRating: (movieId: number, value: number) => void;
 }
 
 const useMovieDBStore = create<MoviesList>((set, get) => ({
   isError: false,
   isNoResults: false,
-  apiBase: 'https://api.themoviedb.org/3/search/movie',
+  _apiBase: 'https://api.themoviedb.org/3/search/movie',
+  apiKey: '4b7268e646b81e540737938397bc7ab4',
+  guestSessionId: '',
   options: {
     method: 'GET',
     headers: {
       accept: 'application/json',
-      Authorization:
-        'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0YjcyNjhlNjQ2YjgxZTU0MDczNzkzODM5N2JjN2FiNCIsInN1YiI6IjY1OWQxMmM5YzQ5MDQ4MDI1OGFlNjZkMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VIB5h_5UJ_IOlINCwgS3Rb_5NfD1w_5KnczOva2QvFo',
+      // Authorization:
+      //   'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0YjcyNjhlNjQ2YjgxZTU0MDczNzkzODM5N2JjN2FiNCIsInN1YiI6IjY1OWQxMmM5YzQ5MDQ4MDI1OGFlNjZkMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VIB5h_5UJ_IOlINCwgS3Rb_5NfD1w_5KnczOva2QvFo',
     },
   },
   movies: [],
-  genres: new Map<number, string>(),
+  ratedMovies: new Map<number, number>(),
   isLoading: false,
   totalResults: 0,
 
-  setGenres: async (): Promise<void> => {
-    const { options } = get();
-    try {
-      const res = await fetch('https://api.themoviedb.org/3/genre/movie/list', options);
-      if (!res.ok) set({ isError: true });
-      const allGenres = await res.json();
-      const mapGenres = new Map<number, string>();
-      allGenres.genres.forEach((genre: Genre) => {
-        mapGenres.set(genre.id, genre.name);
-      });
-      set({ genres: mapGenres });
-    } catch {
-      set({ isError: true });
-    }
-  },
-
   getMovies: async (title, page) => {
-    const { apiBase, options, genres } = get();
+    const { _apiBase, apiKey, options, ratedMovies } = get();
     set({ isLoading: true });
     try {
-      const url = `${apiBase}?query=${title}&page=${page}`;
+      const url = `${_apiBase}?api_key=${apiKey}&query=${title}&page=${page}`;
       const res = await fetch(url, options);
       if (!res.ok) set({ isError: true });
       const allMovies = await res.json();
@@ -97,13 +83,12 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
       const MovieList: Movie[] = allMovies.results.map((movie: ApiMovie) => {
         let date = '';
         if (movie.release_date) date = format(new Date(movie.release_date), 'MMMM dd, yyyy');
-        const movieGens = movie.genre_ids.map((id: number) => genres.get(id));
 
         let desc = movie.overview;
-        if (movie.overview.length > 200) {
-          desc = `${movie.overview.slice(0, movie.overview.lastIndexOf(' ', 200))}...`;
+        if (movie.overview.length > 180) {
+          desc = `${movie.overview.slice(0, movie.overview.lastIndexOf(' ', 180))}...`;
         }
-
+        const genres: Map<number, string> = new Map(Array.from(movie.genre_ids.map((id) => [id, ''])));
         const newMovie: Movie = {
           id: movie.id,
           title: movie.title,
@@ -111,11 +96,86 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
           releaseDate: date,
           posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/original${movie.poster_path}` : noPosterImage,
           rating: Math.trunc(movie.vote_average * 10) / 10,
-          movieGenres: movieGens,
+          userRating: ratedMovies.get(movie.id) || 0,
+          movieGenres: genres,
         };
         return newMovie;
       });
       set({ movies: MovieList, isLoading: false, totalResults: allMovies.total_results });
+    } catch {
+      set({ isError: true });
+    }
+  },
+
+  getRatedMovies: async (page: number) => {
+    const { apiKey, guestSessionId, options } = get();
+    set({ isLoading: true });
+    try {
+      const url = `https://api.themoviedb.org/3/guest_session/${guestSessionId}/rated/movies?api_key=${apiKey}&page=${page}`;
+      const res = await fetch(url, options);
+      if (!res.ok) set({ isError: true });
+      const allMovies = await res.json();
+      if (allMovies.results.length === 0) set({ isNoResults: true });
+      else set({ isNoResults: false });
+      const MovieList: Movie[] = allMovies.results.map((movie: ApiMovie) => {
+        let date = '';
+        if (movie.release_date) date = format(new Date(movie.release_date), 'MMMM dd, yyyy');
+
+        let desc = movie.overview;
+        if (movie.overview.length > 200) {
+          desc = `${movie.overview.slice(0, movie.overview.lastIndexOf(' ', 200))}...`;
+        }
+        const genres: Map<number, string> = new Map(Array.from(movie.genre_ids.map((id) => [id, ''])));
+        const newMovie: Movie = {
+          id: movie.id,
+          title: movie.title,
+          description: desc,
+          releaseDate: date,
+          posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/original${movie.poster_path}` : noPosterImage,
+          rating: Math.trunc(movie.vote_average * 10) / 10,
+          userRating: movie.rating || 0,
+          movieGenres: genres,
+        };
+        return newMovie;
+      });
+      set({ movies: MovieList, isLoading: false, totalResults: allMovies.total_results });
+    } catch {
+      set({ isError: true });
+    }
+  },
+  getGuestSessionId: async () => {
+    const { apiKey, options, ratedMovies } = get();
+
+    set({ isLoading: true });
+
+    try {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/authentication/guest_session/new?api_key=${apiKey}`,
+        options
+      );
+      if (!res.ok) set({ isError: true });
+      const resJson = await res.json();
+      ratedMovies.clear();
+      set({ guestSessionId: resJson.guest_session_id, isLoading: false });
+    } catch {
+      set({ isError: true });
+    }
+  },
+  addRating: async (movieId, value) => {
+    const { apiKey, guestSessionId, ratedMovies } = get();
+    const url = `https://api.themoviedb.org/3/movie/${movieId}/rating?api_key=${apiKey}&guest_session_id=${guestSessionId}`;
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json;charset=utf-8',
+        },
+        body: JSON.stringify({ value }),
+      });
+
+      ratedMovies.set(movieId, value);
+      if (!res.ok) set({ isError: true });
     } catch {
       set({ isError: true });
     }
