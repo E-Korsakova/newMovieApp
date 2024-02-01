@@ -4,7 +4,7 @@ import { ReactElement } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import debounce from 'lodash.debounce';
 
-import useMovieDBStore from '../../data/services/useMovieBDStore.ts';
+import { useMovieDBStore } from '../../data/services/useMovieBDStore';
 
 const tabItems: TabsProps['items'] = [
   {
@@ -93,4 +93,4 @@ function AppHeader({
   );
 }
 
-export default AppHeader;
+export { AppHeader };

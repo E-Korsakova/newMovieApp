@@ -4,8 +4,9 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:react-hooks/recommended',
-    "airbnb", 
-    "airbnb/hooks", 
+    // "airbnb",
+    "airbnb-typescript",  
+    // "airbnb/hooks", 
     "plugin:react/jsx-runtime", 
     'plugin:react/recommended',
     'plugin:jsx-a11y/recommended',
@@ -51,6 +52,14 @@ module.exports = {
         ],
         "newlines-between": "always"
         }
+      ],
+      "import/extensions": [
+        "error",
+        "ignorePackages",
+        {
+          "ts": "never",
+          "tsx": "never"
+        }
       ]
   },
   "settings": {
@@ -60,6 +69,6 @@ module.exports = {
         "extensions": [".js", ".jsx", ".ts", ".tsx"],
         "moduleDirectory": ["node_modules", "src/"]
       }
-    }
+    },
   }
 }

@@ -2,7 +2,7 @@ import { Pagination } from 'antd';
 import { Footer } from 'antd/es/layout/layout';
 import { ReactElement } from 'react';
 
-import useMovieDBStore from '../../data/services/useMovieBDStore.ts';
+import { useMovieDBStore } from '../../data/services/useMovieBDStore';
 
 interface AppFooterProps {
   page: number;
@@ -41,4 +41,5 @@ function AppFooter({ page, currentQuery, setPage, currentTab }: AppFooterProps):
     </Footer>
   );
 }
-export default AppFooter;
+
+export { AppFooter };

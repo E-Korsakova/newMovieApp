@@ -2,9 +2,9 @@ import React, { ReactElement } from 'react';
 import { Flex, Spin, Typography } from 'antd';
 import { useMediaQuery } from 'react-responsive';
 
-import MovieCard from '../Movie-Card/index.tsx';
-import AppFooter from '../App-Footer/index.tsx';
-import useMovieDBStore from '../../data/services/useMovieBDStore.ts';
+import { MovieCard } from '../MovieCard';
+import { AppFooter } from '../AppFooter';
+import { useMovieDBStore } from '../../data/services/useMovieBDStore';
 
 interface MovieListProps {
   currentTab: string;
@@ -14,13 +14,12 @@ interface MovieListProps {
 }
 
 const movieListStyle: React.CSSProperties = {
-  justifyContent: 'space-evenly',
+  justifyContent: 'flex-start',
   flexWrap: 'wrap',
   gap: '35px',
   maxWidth: '1010px',
   marginTop: '20px',
-  marginLeft: 'auto',
-  marginRight: 'auto',
+  marginLeft: '35px',
 };
 
 function MovieList({ currentTab, page, setPage, currentQuery }: MovieListProps): ReactElement {
@@ -60,7 +59,7 @@ function MovieList({ currentTab, page, setPage, currentQuery }: MovieListProps):
       )}
       {!isLoading && (
         <>
-          <Flex style={isMobile ? { ...movieListStyle, margin: '0 10px' } : movieListStyle}>{movieCards}</Flex>
+          <Flex style={isMobile ? { ...movieListStyle, justifyContent: 'center' } : movieListStyle}>{movieCards}</Flex>
           {movies[0] && <AppFooter page={page} setPage={setPage} currentQuery={currentQuery} currentTab={currentTab} />}
         </>
       )}
@@ -68,4 +67,4 @@ function MovieList({ currentTab, page, setPage, currentQuery }: MovieListProps):
   );
 }
 
-export default MovieList;
+export { MovieList };

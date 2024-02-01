@@ -37,7 +37,7 @@ interface OptionsProps {
 interface MoviesList {
   isError: boolean;
   isNoResults: boolean;
-  _apiBase: string;
+  apiBase: string;
   apiKey: string;
   guestSessionId: string;
   options: OptionsProps;
@@ -54,15 +54,13 @@ interface MoviesList {
 const useMovieDBStore = create<MoviesList>((set, get) => ({
   isError: false,
   isNoResults: false,
-  _apiBase: 'https://api.themoviedb.org/3/search/movie',
+  apiBase: 'https://api.themoviedb.org/3/search/movie',
   apiKey: '4b7268e646b81e540737938397bc7ab4',
   guestSessionId: '',
   options: {
     method: 'GET',
     headers: {
       accept: 'application/json',
-      // Authorization:
-      //   'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0YjcyNjhlNjQ2YjgxZTU0MDczNzkzODM5N2JjN2FiNCIsInN1YiI6IjY1OWQxMmM5YzQ5MDQ4MDI1OGFlNjZkMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VIB5h_5UJ_IOlINCwgS3Rb_5NfD1w_5KnczOva2QvFo',
     },
   },
   movies: [],
@@ -71,10 +69,10 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
   totalResults: 0,
 
   getMovies: async (title, page) => {
-    const { _apiBase, apiKey, options, ratedMovies } = get();
+    const { apiBase, apiKey, options, ratedMovies } = get();
     set({ isLoading: true });
     try {
-      const url = `${_apiBase}?api_key=${apiKey}&query=${title}&page=${page}`;
+      const url = `${apiBase}?api_key=${apiKey}&query=${title}&page=${page}`;
       const res = await fetch(url, options);
       if (!res.ok) set({ isError: true });
       const allMovies = await res.json();
@@ -145,21 +143,29 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
   },
   getGuestSessionId: async () => {
     const { apiKey, options, ratedMovies } = get();
+    let err = false;
 
     set({ isLoading: true });
 
-    try {
-      const res = await fetch(
-        `https://api.themoviedb.org/3/authentication/guest_session/new?api_key=${apiKey}`,
-        options
-      );
-      if (!res.ok) set({ isError: true });
-      const resJson = await res.json();
-      ratedMovies.clear();
-      set({ guestSessionId: resJson.guest_session_id, isLoading: false });
-    } catch {
-      set({ isError: true });
-    }
+    const getSessionId = async (): Promise<void> => {
+      for (let i = 0; i < 2; i++) {
+        try {
+          const res = await fetch(
+            `https://api.themoviedb.org/3/authentication/guest_session/new?api_key=${apiKey}`,
+            options
+          );
+          if (!res.ok) err = true;
+          if (!res.ok && i === 1) set({ isError: true });
+          const resJson = await res.json();
+          ratedMovies.clear();
+          set({ guestSessionId: resJson.guest_session_id, isLoading: false });
+        } catch {
+          set({ isError: true });
+        }
+        if (!err) break;
+      }
+    };
+    getSessionId();
   },
   addRating: async (movieId, value) => {
     const { apiKey, guestSessionId, ratedMovies } = get();
@@ -182,4 +188,4 @@ const useMovieDBStore = create<MoviesList>((set, get) => ({
   },
 }));
 
-export default useMovieDBStore;
+export { useMovieDBStore };

@@ -4,8 +4,8 @@ import Paragraph from 'antd/es/typography/Paragraph';
 import { ReactElement, useContext, useState } from 'react';
 import { useMediaQuery } from 'react-responsive';
 
-import GenresContext from '../../data/GenresContext.ts';
-import useMovieDBStore from '../../data/services/useMovieBDStore.ts';
+import { GenresContext } from '../../data/GenresContext';
+import { useMovieDBStore } from '../../data/services/useMovieBDStore';
 
 interface MovieCardProps {
   id: number;
@@ -161,4 +161,4 @@ function MovieCard({
   );
 }
 
-export default MovieCard;
+export { MovieCard };
