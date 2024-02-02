@@ -147,7 +147,7 @@ function MovieCard({
       )}
       <Rate
         allowHalf
-        allowClear
+        allowClear={false}
         count={10}
         value={userRate}
         style={{ position: 'absolute', right: '17px', bottom: '15px' }}
